@@ -1,0 +1,103 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "2019-01-24T16:16:41Z",
+    "title": "File Transfer POC"
+  },
+  "host": "plscpbn6c2.execute-api.eu-west-2.amazonaws.com",
+  "basePath": "/PublicPOC",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/FileTransferToSQS": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          },
+          "503": {
+            "description": "503 response"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "uri": "arn:aws:apigateway:eu-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-2:356930079321:function:FileTransferToSQS/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            },
+            ".*\"SERVICE_UNAVAILABLE\":*": {
+              "statusCode": "503",
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$.errorMessage')) \t\n{\n  \"code\" : \"SERVICE_UNAVAILABLE\",\n  \"reason\": \"Dependent systems are currently not responding\"\n}"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws"
+        }
+      }
+    },
+    "/file-transfer/status/{filename}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "mock"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "x-api-key",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "Empty": {
+      "type": "object",
+      "title": "Empty Schema"
+    }
+  }
+}
