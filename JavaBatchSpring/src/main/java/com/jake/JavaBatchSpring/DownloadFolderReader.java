@@ -17,13 +17,20 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.simplesystemsmanagement.model.StepExecution;
+
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 
+@EnableBatchProcessing
 public class DownloadFolderReader implements ItemReader {
 
+	private JobExecution je;
 	private File[] localDirectory = new File(System.getProperty("user.dir")).listFiles();
 	File latestCreatedFile;
 	AmazonS3 s3c = AmazonS3ClientBuilder.standard()
@@ -32,6 +39,8 @@ public class DownloadFolderReader implements ItemReader {
 			.build();
 	ListObjectsV2Result objectsInBucket = s3c.listObjectsV2("file-transfer-storage-poc");
 	
+	//Check if file scanned on file system already exists in the S3 bucket.
+	// if not then the batch process will continue, if so then it will throw an error
 	private File s3BucketIfFileExists(File fileToCheck) throws AmazonS3Exception
 	{
 		Logger.getLogger(DownloadFolderReader.class.getName())
@@ -44,8 +53,10 @@ public class DownloadFolderReader implements ItemReader {
 					Logger.getLogger(DownloadFolderReader.class.getName())
 					.log(Level.INFO, "Found: " + objectsInBucket.getObjectSummaries().get(i).getKey() + 
 					" on S3Bucket, file is already backed up,returning null and exiting...");
-					//fileToCheck = null;
-					return null;
+					//this.je.stop(); //WOrkaround to stop job
+					//Attempts to set the batch status from within the bean to signal an exit
+					this.je.setExitStatus(ExitStatus.NOOP); 
+					//return null; //Alternate return option
 					//break;
 				}
 				else
@@ -61,14 +72,9 @@ public class DownloadFolderReader implements ItemReader {
 		return fileToCheck;
 	}
 	
-	
-//	@Override
-//	public Object readItem() throws Exception {
-//		
-//	}
-
 	@Override
 	public Object read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+		//Read local directory to find file with latest last modified data
 		for (File file : localDirectory)
 		{
 			if (!file.isDirectory() && latestCreatedFile == null)
@@ -86,10 +92,14 @@ public class DownloadFolderReader implements ItemReader {
 			}
 		}
 		//###############################################
+		//Logger.getLogger(DownloadFolderReader.class.getName())
+		//.log(Level.INFO, "S3 check... " + s3BucketIfFileExists(latestCreatedFile).toString());
 		Logger.getLogger(DownloadFolderReader.class.getName())
-		.log(Level.INFO, "Returning: " + s3BucketIfFileExists(latestCreatedFile).toString());
-		//return s3BucketIfFileExists(latestCreatedFile);
-		return null;
+		.log(Level.INFO, "S3 check... ");
+		return s3BucketIfFileExists(latestCreatedFile);
+		//return null;
 	}
+	
+	
 
 }

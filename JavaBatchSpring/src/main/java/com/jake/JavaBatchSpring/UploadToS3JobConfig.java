@@ -20,19 +20,26 @@ public class UploadToS3JobConfig {
   @Bean
   public Job uploadToS3Job(JobBuilderFactory jobBuilders,
       StepBuilderFactory stepBuilders) {
-    return jobBuilders.get("awsBackup")
-        .start(awsBackupStep(stepBuilders)).build();
+	  //Setup job by calling step with JobExecution Listener
+	  //- using start instead of flow restricts use of listeners
+	  return jobBuilders.get("awsBackup")
+			  .preventRestart()
+			  .listener(new ReaderExecListener())
+			  .flow(awsBackupStep(stepBuilders))
+			  .end()
+			  .build();
   }
 
   @Bean
   public Step awsBackupStep(StepBuilderFactory stepBuilders) {
-	  
-    return stepBuilders.get("uploadToS3")
-    		.<Object,Object>chunk(1).reader(Reader())
+	 // Trigger step and its relevent reader,processor,writer and any listeners each component needs 
+    return stepBuilders.get("uploadToS3").listener(new ReaderStepExecListener())
+    		.<Object,Object>chunk(1).reader(Reader()).listener(new CustomReaderListener())
 			.processor(Processor())
-			.writer(Writer()).build();
+			.writer(Writer()).build(); 
   }
 
+  //Batch Components
   @Bean
   public DownloadFolderReader Reader() 
   {
@@ -49,7 +56,5 @@ public class UploadToS3JobConfig {
   public UploadS3Writer Writer() 
   {
     return new UploadS3Writer();
-
-
   }
 }

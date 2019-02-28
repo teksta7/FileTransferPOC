@@ -16,34 +16,74 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
-
 @Named("UploadS3Writer")
 public class UploadS3Writer extends AbstractItemWriter{
 
+	File jsonFile; //Json file to write
+	File xmlFile; //xml file to write
+	String[] paths; //used to hold split string data of the filenames to push
+	int count = 0; //For loop counter
+	
 	@Override
-	public void writeItems(List<Object> items) throws Exception {
+	public void writeItems(List items) throws Exception {
 		// TODO Auto-generated method stub
 		try {
+			//Create S3 Clients
 			AmazonS3 s3c = AmazonS3ClientBuilder.standard()
 					.withRegion(Regions.EU_WEST_2)
 					.withCredentials(new ProfileCredentialsProvider())
-					.build();
-			
-			File s3FileToPush = (File) items.get(0);
+					.build();			
 			Logger.getLogger(ReadLatestFileProcessor.class.getName())
-			.log(Level.INFO,"Preparing to upload file to S3...");
-			PutObjectRequest req = new PutObjectRequest("file-transfer-storage-poc", s3FileToPush.getName(), s3FileToPush.getAbsolutePath());
+			.log(Level.INFO,"Preparing to upload xml file to S3...");
+			
+			//Initialise string array to hold filenames
+			//Execute loop to split filename data from list - remove unwanted characters
+			paths = new String[2];
+			for (String split : items.get(0).toString().replace("[", "").replace("]", "").split("#"))
+			{
+				System.out.println("Found file at " + split);
+				paths[count] = split;
+				++count;
+			}
+			count = 0; //workaround in case batch function doesn't reset counter on rerun.
+			
+			//Create new files
+			xmlFile = new File(paths[0].toString());
+			jsonFile = new File(paths[1].toString());
+			//###################################################
+			// Push XML File
+			// Sets bucket, file to push, content type, optional metadata
+			//###################################################
+			PutObjectRequest req = new PutObjectRequest("file-transfer-storage-poc", xmlFile.getName(), xmlFile);
 			ObjectMetadata metaD = new ObjectMetadata();
-			metaD.setContentType("plain/text");
-			metaD.addUserMetadata("Java-Batch-Processing", "Successful");
+			metaD.setContentType("text/xml");
+			metaD.addUserMetadata("Java-Batch-Processing", "Transformed Copy");
 			req.setMetadata(metaD);
 			s3c.putObject(req);
+			//###################################################
+			// Push JSON File
+			// Sets bucket, file to push, content type, optional metadata
+			//###################################################
+			Logger.getLogger(ReadLatestFileProcessor.class.getName())
+			.log(Level.INFO,"Preparing to upload json file to S3...");
+			PutObjectRequest Jreq = new PutObjectRequest("file-transfer-storage-poc", jsonFile.getName(), jsonFile);
+			ObjectMetadata JmetaD = new ObjectMetadata();
+			JmetaD.setContentType("application/json");
+			JmetaD.addUserMetadata("Java-Batch-Processing", "Original Copy");
+			Jreq.setMetadata(JmetaD);
+			s3c.putObject(Jreq);
+			//###################################################
+			Logger.getLogger(DownloadFolderReader.class.getName())
+			.log(Level.INFO,"FILE UPLOADED");
+			s3c.shutdown();
+			//s3b.shutdown();
+
 		}
 		catch(AmazonServiceException aws)
 		{
 			aws.printStackTrace();
-		}
-		
+		}		
+
 	}
 
 }

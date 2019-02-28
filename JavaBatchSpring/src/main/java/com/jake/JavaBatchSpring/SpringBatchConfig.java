@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableBatchProcessing
+//NOT_USED - can be used for database connections if needed
 public class SpringBatchConfig extends DefaultBatchConfigurer {
 
 	@Override
