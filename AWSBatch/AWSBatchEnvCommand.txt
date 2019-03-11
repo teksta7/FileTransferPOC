@@ -1,0 +1,1 @@
+aws batch create-compute-environment --compute-environment-name awsBatchEnv --type UNMANAGED --state ENABLED --compute-resources type=EC2,minvCpus=1,maxvCpus=1,desiredvCpus=1,instanceTypes=t2.micro,imageId=amazonlinux,ec2KeyPair=id_rsa,subnets=subnet-0503cc63be20c740e,instanceRole=ECSrole --service-role batchAdmin
