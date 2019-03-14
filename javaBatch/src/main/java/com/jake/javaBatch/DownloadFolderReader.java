@@ -35,7 +35,7 @@ public class DownloadFolderReader extends AbstractItemReader {
 				.withRegion(Regions.EU_WEST_2)
 				.withCredentials(new ProfileCredentialsProvider())
 				.build();
-		objectsInBucket = s3c.listObjectsV2("file-transfer-storage-poc");
+		//objectsInBucket = s3c.listObjectsV2("file-transfer-storage-poc");
 		
 	}
 	
@@ -43,6 +43,7 @@ public class DownloadFolderReader extends AbstractItemReader {
 		// if not then the batch process will continue, if so then it will throw an error
 		private File s3BucketIfFileExists(File fileToCheck) throws AmazonS3Exception
 		{
+			objectsInBucket = s3c.listObjectsV2("file-transfer-storage-poc");
 			Logger.getLogger(DownloadFolderReader.class.getName())
 			.log(Level.INFO, "Looking for: " + fileToCheck.getName());
 			
