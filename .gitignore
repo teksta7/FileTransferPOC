@@ -1,4 +1,4 @@
-/target/
+target/
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
@@ -22,5 +22,5 @@
 /dist/
 /nbdist/
 /.nb-gradle/
-/build/
 .gitignore
+/target/
