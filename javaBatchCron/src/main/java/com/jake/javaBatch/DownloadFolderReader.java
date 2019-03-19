@@ -9,7 +9,6 @@ import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobInstance;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 
@@ -19,12 +18,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-
 
 @Named("DownloadFolderReader")
 public class DownloadFolderReader extends AbstractItemReader {
@@ -33,9 +26,7 @@ public class DownloadFolderReader extends AbstractItemReader {
 	File latestCreatedFile;
 	AmazonS3 s3c;
 	ListObjectsV2Result objectsInBucket;
-	//Producer mongoDbConn;
-	@Inject
-	MongoClient mongoClient;
+
 	@Override
 	public void open(Serializable checkpoint) throws Exception 
 	{
@@ -85,31 +76,8 @@ public class DownloadFolderReader extends AbstractItemReader {
 	
 	@Override
 	public Object readItem() throws Exception {
-		// Make a database server connection
-		System.out.println("Calling Mongo Db server for connection");
-		MongoClient mongoClient = new MongoClient("localhost", 27017);
-		//Get the database
-		DB db = mongoClient.getDB("mydb");		
-        // get a collection object to work with
-        DBCollection coll = db.getCollection("FileTransfer");
-
-        // drop all the data in it
-        coll.drop();
-
-        // make a document and insert it
-        BasicDBObject doc = new BasicDBObject("name", "MongoDB")
-                .append("type", "database")
-                .append("count", 1)
-                .append("info", new BasicDBObject("x", 203).append("y", 102));
-
-        coll.insert(doc);
-		
-        // get the data (since it's the only one in there since we dropped the rest earlier on)
-        DBObject myDoc = coll.findOne();
-        System.out.println(myDoc);
-		
-        //Read local directory to find file with latest last modified data
-		for (File file : localDirectory)
+		//Read local directory to find file with latest last modified data
+				for (File file : localDirectory)
 				{
 					if (!file.isDirectory() && latestCreatedFile == null)
 					{
