@@ -3,10 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.jake</groupId>
   <artifactId>javaBatch</artifactId>
+  <packaging>war</packaging>
   <name>javaBatch</name>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.9Beta</version>
   <url>http://maven.apache.org</url>
   <build>
+    <finalName>java-batch</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
