@@ -2,9 +2,9 @@
   <step id="uploadToS3"> <!-- Step name - can be N number of steps to trigger multiple types of logic/functions-->
     <!-- to iterate through Reader and processor for the amount of "item-count" before doing the same with writer in a chunk step -->
     <chunk item-count="1">
-      <reader ref="com.jake.javaBatch.DownloadFolderReader"/> <!--Read data from somewhere to make availble to batch runtime-->
-      <processor ref="com.jake.javaBatch.ReadLatestFileProcessor"/> <!-- process data from batch runtime -->
-      <writer ref="com.jake.javaBatch.UploadS3Writer"/> <!-- write data generated from processor -->
+      <reader ref="jReader"/> <!--Read data from somewhere to make availble to batch runtime-->
+      <processor ref="jProcessor"/> <!-- process data from batch runtime -->
+      <writer ref="jWriter"/> <!-- write data generated from processor -->
     </chunk>
   </step>
 </job>
