@@ -67,5 +67,10 @@
 			<artifactId>aws-java-sdk</artifactId>
 			<version>LATEST</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>3.9.0-rc0</version>
+		</dependency>
 	</dependencies>
 </project>
