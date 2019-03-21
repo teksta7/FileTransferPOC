@@ -34,12 +34,12 @@ public class DownloadFolderReader extends AbstractItemReader {
 	AmazonS3 s3c;
 	ListObjectsV2Result objectsInBucket;
 	//Producer mongoDbConn;
-	@Inject
+	//@Inject
 	MongoClient mongoClient;
 	@Override
 	public void open(Serializable checkpoint) throws Exception 
 	{
-		localDirectory = new File("/Users/abhishekdesai/Documents/temp").listFiles();
+		localDirectory = new File(System.getProperty("user.dir")).listFiles();
 		s3c = AmazonS3ClientBuilder.standard()
 				.withRegion(Regions.EU_WEST_2)
 				.withCredentials(new ProfileCredentialsProvider())
@@ -50,37 +50,37 @@ public class DownloadFolderReader extends AbstractItemReader {
 	
 	//Check if file scanned on file system already exists in the S3 bucket.
 		// if not then the batch process will continue, if so then it will throw an error
-		private File s3BucketIfFileExists(File fileToCheck) throws AmazonS3Exception
+	private File s3BucketIfFileExists(File fileToCheck) throws AmazonS3Exception
+	{
+		objectsInBucket = s3c.listObjectsV2("file-transfer-storage-poc");
+		Logger.getLogger(DownloadFolderReader.class.getName())
+		.log(Level.INFO, "Looking for: " + fileToCheck.getName());
+		
+		for(int i = 0; i<objectsInBucket.getKeyCount(); i++)
 		{
-			objectsInBucket = s3c.listObjectsV2("abhidesaipublicbucket");
-			Logger.getLogger(DownloadFolderReader.class.getName())
-			.log(Level.INFO, "Looking for: " + fileToCheck.getName());
-			
-			for(int i = 0; i<objectsInBucket.getKeyCount(); i++)
-			{
-					if(objectsInBucket.getObjectSummaries().get(i).getKey().toString().equals(fileToCheck.getName()))
-					{
-						Logger.getLogger(DownloadFolderReader.class.getName())
-						.log(Level.INFO, "Found: " + objectsInBucket.getObjectSummaries().get(i).getKey() + 
-						" on S3Bucket, file is already backed up,returning null and exiting...");
-						//this.je.stop(); //WOrkaround to stop job
-						//Attempts to set the batch status from within the bean to signal an exit
-						//this.je.setExitStatus(ExitStatus.NOOP); 
-						return null; //Alternate return option
-						//break;
-					}
-					else
-					{
-						Logger.getLogger(DownloadFolderReader.class.getName())
-						.log(Level.INFO, objectsInBucket.getObjectSummaries().get(i).getKey() + 
-						" doesn't match current object, continuing to look...");
-					}
+				if(objectsInBucket.getObjectSummaries().get(i).getKey().toString().equals(fileToCheck.getName()))
+				{
+					Logger.getLogger(DownloadFolderReader.class.getName())
+					.log(Level.INFO, "Found: " + objectsInBucket.getObjectSummaries().get(i).getKey() + 
+					" on S3Bucket, file is already backed up,returning null and exiting...");
+					//this.je.stop(); //WOrkaround to stop job
+					//Attempts to set the batch status from within the bean to signal an exit
+					//this.je.setExitStatus(ExitStatus.NOOP); 
+					return null; //Alternate return option
+					//break;
 				}
-			
-			Logger.getLogger(DownloadFolderReader.class.getName())
-			.log(Level.INFO,"No match found on bucket, Preparing file for further processing and transfer");
-			return fileToCheck;
-		}
+				else
+				{
+					Logger.getLogger(DownloadFolderReader.class.getName())
+					.log(Level.INFO, objectsInBucket.getObjectSummaries().get(i).getKey() + 
+					" doesn't match current object, continuing to look...");
+				}
+			}
+		
+		Logger.getLogger(DownloadFolderReader.class.getName())
+		.log(Level.INFO,"No match found on bucket, Preparing file for further processing and transfer");
+		return fileToCheck;
+}
 	
 	
 	@Override
