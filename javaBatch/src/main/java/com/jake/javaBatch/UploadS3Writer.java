@@ -6,11 +6,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.AbstractItemWriter;
+import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -23,6 +30,9 @@ public class UploadS3Writer extends AbstractItemWriter{
 	File xmlFile; //xml file to write
 	String[] paths; //used to hold split string data of the filenames to push
 	int count = 0; //For loop counter
+
+	@Inject
+	JobContext jobContext;
 	
 	@Override
 	public void writeItems(List items) throws Exception {
@@ -54,7 +64,7 @@ public class UploadS3Writer extends AbstractItemWriter{
 			// Push XML File
 			// Sets bucket, file to push, content type, optional metadata
 			//###################################################
-			PutObjectRequest req = new PutObjectRequest("file-transfer-storage-poc", xmlFile.getName(), xmlFile);
+			PutObjectRequest req = new PutObjectRequest("abhidesaipublicbucket", xmlFile.getName(), xmlFile);
 			ObjectMetadata metaD = new ObjectMetadata();
 			metaD.setContentType("text/xml");
 			metaD.addUserMetadata("Java-Batch-Processing", "Transformed Copy");
@@ -66,7 +76,7 @@ public class UploadS3Writer extends AbstractItemWriter{
 			//###################################################
 			Logger.getLogger(ReadLatestFileProcessor.class.getName())
 			.log(Level.INFO,"Preparing to upload json file to S3...");
-			PutObjectRequest Jreq = new PutObjectRequest("file-transfer-storage-poc", jsonFile.getName(), jsonFile);
+			PutObjectRequest Jreq = new PutObjectRequest("abhidesaipublicbucket", jsonFile.getName(), jsonFile);
 			ObjectMetadata JmetaD = new ObjectMetadata();
 			JmetaD.setContentType("application/json");
 			JmetaD.addUserMetadata("Java-Batch-Processing", "Original Copy");
@@ -82,8 +92,35 @@ public class UploadS3Writer extends AbstractItemWriter{
 		catch(AmazonServiceException aws)
 		{
 			aws.printStackTrace();
-		}		
+		}
 
+		logEndBatch();
+
+	}
+
+	private void logEndBatch() {
+		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().withRegion(Regions.EU_WEST_2).build();
+
+		DynamoDB dynamoDB = new DynamoDB(client);
+
+		Table table = dynamoDB.getTable("batch");
+
+		int batchId = (Integer) jobContext.getTransientUserData();
+
+		UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("batchid", Integer.toString(batchId))
+				.withUpdateExpression("set batchstatus = :val")
+				.withValueMap(new ValueMap()
+						.withString(":val", "COMPLETED"));
+
+		try {
+			System.out.println("Marking item complete with batchId: " + batchId);
+			UpdateItemOutcome outcome = table.updateItem(updateItemSpec);
+
+			System.out.println("PutItem succeeded:\n" + outcome.getUpdateItemResult());
+		} catch (Exception e) {
+			System.err.println("Unable to update item with batchId: " + batchId);
+			System.err.println(e.getMessage());
+		}
 	}
 
 }
