@@ -65,7 +65,7 @@ public class UploadS3Writer extends AbstractItemWriter{
 			// Push JSON File
 			// Sets bucket, file to push, content type, optional metadata
 			//###################################################
-			Logger.getLogger(ReadLatestFileProcessor.class.getName())
+			Logger.getLogger(UploadS3Writer.class.getName())
 			.log(Level.INFO,"Preparing to upload json file to S3...");
 			PutObjectRequest Jreq = new PutObjectRequest("mdg.wms.filetransfer.data.poc", jsonFile.getName(), jsonFile);
 			ObjectMetadata JmetaD = new ObjectMetadata();
@@ -74,7 +74,7 @@ public class UploadS3Writer extends AbstractItemWriter{
 			Jreq.setMetadata(JmetaD);
 			s3c.putObject(Jreq);
 			//###################################################
-			Logger.getLogger(DownloadFolderReader.class.getName())
+			Logger.getLogger(UploadS3Writer.class.getName())
 			.log(Level.INFO,"FILE UPLOADED");
 			s3c.shutdown();
 			//s3b.shutdown();
