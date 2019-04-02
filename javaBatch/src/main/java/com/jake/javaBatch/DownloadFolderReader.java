@@ -39,11 +39,12 @@ public class DownloadFolderReader extends AbstractItemReader {
 	@Override
 	public void open(Serializable checkpoint) throws Exception 
 	{
-		localDirectory = new File(System.getProperty("user.dir")).listFiles();
+		//localDirectory = new File(System.getProperty("user.dir")).listFiles();
+		localDirectory = new File("/tmp/storage/test/").listFiles(); //Docker use
 		s3c = AmazonS3ClientBuilder.standard()
 				.withRegion(Regions.EU_WEST_2)
-				.withCredentials(new ProfileCredentialsProvider())
 				.build();
+		//.withCredentials(new ProfileCredentialsProvider())
 		//objectsInBucket = s3c.listObjectsV2("abhidesaipublicbucket");
 		
 	}
@@ -52,7 +53,7 @@ public class DownloadFolderReader extends AbstractItemReader {
 		// if not then the batch process will continue, if so then it will throw an error
 	private File s3BucketIfFileExists(File fileToCheck) throws AmazonS3Exception
 	{
-		objectsInBucket = s3c.listObjectsV2("file-transfer-storage-poc");
+		objectsInBucket = s3c.listObjectsV2("mdg.wms.filetransfer.data.poc"); //file-transfer-storage-poc
 		Logger.getLogger(DownloadFolderReader.class.getName())
 		.log(Level.INFO, "Looking for: " + fileToCheck.getName());
 		
@@ -87,36 +88,40 @@ public class DownloadFolderReader extends AbstractItemReader {
 	public Object readItem() throws Exception {
 		// Make a database server connection
 		System.out.println("Calling Mongo Db server for connection");
-		MongoClient mongoClient = new MongoClient("localhost", 27017);
-		//Get the database
-		DB db = mongoClient.getDB("mydb");		
-        // get a collection object to work with
-        DBCollection coll = db.getCollection("FileTransfer");
-
-        // drop all the data in it
-        coll.drop();
-
-        // make a document and insert it
-        BasicDBObject doc = new BasicDBObject("name", "MongoDB")
-                .append("type", "database")
-                .append("count", 1)
-                .append("info", new BasicDBObject("x", 203).append("y", 102));
-
-        coll.insert(doc);
-		
-        // get the data (since it's the only one in there since we dropped the rest earlier on)
-        DBObject myDoc = coll.findOne();
-        System.out.println(myDoc);
-		
+//		MongoClient mongoClient = new MongoClient("172.17.0.4", 27017);
+//		//Get the database
+//		DB db = mongoClient.getDB("mydb");		
+//        // get a collection object to work with
+//        DBCollection coll = db.getCollection("FileTransfer");
+//
+//        // drop all the data in it
+//        coll.drop();
+//
+//        // make a document and insert it
+//        BasicDBObject doc = new BasicDBObject("name", "MongoDB")
+//                .append("type", "database")
+//                .append("count", 1)
+//                .append("info", new BasicDBObject("x", 203).append("y", 102));
+//
+//        coll.insert(doc);
+//		
+//        // get the data (since it's the only one in there since we dropped the rest earlier on)
+//        DBObject myDoc = coll.findOne();
+//        System.out.println(myDoc);
+//		System.out.println(System.getProperty("user.dir"));
         //Read local directory to find file with latest last modified data
+		latestCreatedFile = null;
 		for (File file : localDirectory)
 				{
+			System.out.println(file.getName() + "" + file.getAbsolutePath());
 					if (!file.isDirectory() && latestCreatedFile == null)
 					{
+						System.out.println("A");
 						latestCreatedFile = file;
 					}
 					else if (file.lastModified() > latestCreatedFile.lastModified())
 					{
+						System.out.println("B");
 						latestCreatedFile = file;
 					}
 					else
@@ -125,6 +130,7 @@ public class DownloadFolderReader extends AbstractItemReader {
 							.log(Level.INFO, file.getName() + " is not the latest file, skipping...");
 					}
 				}
+				System.out.println("Latest file is: " + latestCreatedFile.getName());
 				//###############################################
 				//Logger.getLogger(DownloadFolderReader.class.getName())
 				//.log(Level.INFO, "S3 check... " + s3BucketIfFileExists(latestCreatedFile).toString());

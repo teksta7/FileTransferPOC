@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.SSEAwsKeyManagementParams;
 
 @Named("UploadS3Writer")
 public class UploadS3Writer extends AbstractItemWriter{
@@ -31,9 +32,8 @@ public class UploadS3Writer extends AbstractItemWriter{
 			//Create S3 Clients
 			AmazonS3 s3c = AmazonS3ClientBuilder.standard()
 					.withRegion(Regions.EU_WEST_2)
-					.withCredentials(new ProfileCredentialsProvider())
 					.build();			
-			Logger.getLogger(ReadLatestFileProcessor.class.getName())
+			Logger.getLogger(UploadS3Writer.class.getName())
 			.log(Level.INFO,"Preparing to upload xml file to S3...");
 			
 			//Initialise string array to hold filenames
@@ -54,7 +54,8 @@ public class UploadS3Writer extends AbstractItemWriter{
 			// Push XML File
 			// Sets bucket, file to push, content type, optional metadata
 			//###################################################
-			PutObjectRequest req = new PutObjectRequest("file-transfer-storage-poc", xmlFile.getName(), xmlFile);
+			PutObjectRequest req = new PutObjectRequest("mdg.wms.filetransfer.data.poc", xmlFile.getName(), xmlFile)
+					.withSSEAwsKeyManagementParams(new SSEAwsKeyManagementParams());
 			ObjectMetadata metaD = new ObjectMetadata();
 			metaD.setContentType("text/xml");
 			metaD.addUserMetadata("Java-Batch-Processing", "Transformed Copy");
@@ -66,7 +67,7 @@ public class UploadS3Writer extends AbstractItemWriter{
 			//###################################################
 			Logger.getLogger(ReadLatestFileProcessor.class.getName())
 			.log(Level.INFO,"Preparing to upload json file to S3...");
-			PutObjectRequest Jreq = new PutObjectRequest("file-transfer-storage-poc", jsonFile.getName(), jsonFile);
+			PutObjectRequest Jreq = new PutObjectRequest("mdg.wms.filetransfer.data.poc", jsonFile.getName(), jsonFile);
 			ObjectMetadata JmetaD = new ObjectMetadata();
 			JmetaD.setContentType("application/json");
 			JmetaD.addUserMetadata("Java-Batch-Processing", "Original Copy");

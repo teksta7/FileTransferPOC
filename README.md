@@ -13,8 +13,11 @@ Code includes the following
 * pom.xml - NOT IN USE YET
 * Dummy Mock Service - this directory contains a springboot project to bring up a simple microservice that contains some REST endpoints that can be hit for testing environments/network config
 * javaBatch- this directory contains a java project to test out Java Batch processing working with AWS services(S3)
+  To build the docker image from the included docker file you will need: Docker, JBeretUI Source, WildFly 16 and compiled Java Batch project. The following commands are then used
+  - sudo docker build --no-cache -t teksta7/java-batch-poc:latest .
+  - sudo docker run -t -d -v dockerVM -p 8080:8080 -p 3000:3000 -p 3001:3001 -p 9990:9990 -p 4713:4713 -p 25:25 -p 4712:4712 -p 8443:8443 -p 8009:8009 -p 9993:9993 --name JBPOC teksta7/java-batch-poc
 * template.yml - this directory contains Lambda function code in a variety of languages including Python, Node.js and Java to help facilitate the file transfer solution, including communication with FTP servers, AWS SNS, AWS SQS and AWS S3
-* AWSBatch - bash file that will run in a docker container within AWS Batch using AWS ECS behind the scenes to run the container. Looks for file with latest last modified date and will check if its present in S3 bucket, if not present, it will push the file to an S3 bucket. If present it will not push the file. 
+* AWSBatch - bash file that will run in a docker container within AWS Batch using AWS ECS behind the scenes to run the container. Looks for file with latest last modified date and will check if its present in S3 bucket, if not present, it will push the file to an S3 bucket. If present it will not push the file.
 
 To prepare use the following commands
 - sudo docker build -t teksta7/aws-batch-demo:latest . (Replace the local repo name "teksta7/aws-batch-demo" with your own)
