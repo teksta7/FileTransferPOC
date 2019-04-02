@@ -67,7 +67,8 @@ public class UploadS3Writer extends AbstractItemWriter{
 			//###################################################
 			Logger.getLogger(UploadS3Writer.class.getName())
 			.log(Level.INFO,"Preparing to upload json file to S3...");
-			PutObjectRequest Jreq = new PutObjectRequest("mdg.wms.filetransfer.data.poc", jsonFile.getName(), jsonFile);
+			PutObjectRequest Jreq = new PutObjectRequest("mdg.wms.filetransfer.data.poc", jsonFile.getName(), jsonFile)
+				         .withSSEAwsKeyManagementParams(new SSEAwsKeyManagementParams());
 			ObjectMetadata JmetaD = new ObjectMetadata();
 			JmetaD.setContentType("application/json");
 			JmetaD.addUserMetadata("Java-Batch-Processing", "Original Copy");
