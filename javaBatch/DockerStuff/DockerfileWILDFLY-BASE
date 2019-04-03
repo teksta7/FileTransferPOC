@@ -1,0 +1,28 @@
+FROM jboss/wildfly
+MAINTAINER teksta7
+RUN /opt/jboss/wildfly/bin/add-user.sh pocUser password
+USER root
+RUN yum upgrade -y
+RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN yum install -y wget yum-utils https://centos7.iuscommunity.org/ius-release.rpm
+RUN yum install -y nodejs.x86_64 npm
+
+#JBeret UI Setup
+RUN mkdir /tmp/JBeretUI /tmp/storage /tmp/storage/test
+COPY jberet-ui-master/ /tmp/JBeretUI/
+WORKDIR /tmp/JBeretUI
+RUN npm install -g bower forever gulp
+RUN npm install
+
+#Logging and test files setup
+RUN touch /tmp/storage/JBeretUI.log
+RUN touch /tmp/storage/Wildfly.log
+WORKDIR /tmp/storage/test
+ADD sampleLarge.json /tmp/storage/test/sampleLarge.json
+ADD sampleOLD.json /tmp/storage/test/sampleOLD.json
+
+#Copy script
+ADD runALT.sh /tmp/runALT.sh
+RUN chown +777 /tmp/runALT.sh
+RUN chmod +x /tmp/runALT.sh
+CMD /tmp/runALT.sh

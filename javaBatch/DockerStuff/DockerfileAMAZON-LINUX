@@ -6,14 +6,14 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 RUN yum install -y wget yum-utils https://centos7.iuscommunity.org/ius-release.rpm
 RUN cd /tmp
 RUN wget --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/11.0.2+9/f51449fcd52f4d52b93a989c5c56ed3c/jdk-11.0.2_linux-x64_bin.rpm"
-RUN yum localinstall -y jdk-11.0.2_linux-x64_bin.rpm 
+RUN yum localinstall -y jdk-11.0.2_linux-x64_bin.rpm
 RUN yum install -y nodejs.x86_64 npm curl make gcc-c++ awscli python36u python36u-pip
 RUN yum clean all
 RUN rm -rf /var/cache/yum
 ADD run.sh /tmp/run.sh
 RUN chown +777 /tmp/run.sh
 RUN chmod +x /tmp/run.sh
-RUN mkdir -p /data/db 
+RUN mkdir -p /data/db
 
 #AWS Creds Config
 #ARG AWS_ACCESS_KEY_ID=NOT_FOUND
@@ -49,13 +49,10 @@ EXPOSE 9990 3000 3001 8080 8009 8443 4712 4713 25 9993 27017
 #JBeret UI Setup
 COPY jberet-ui-master/ /tmp/JBeretUI/
 WORKDIR /tmp/JBeretUI
-RUN npm install -g bower forever
-RUN npm install --save gulp-install
+RUN npm install -g bower forever gulp
 RUN npm install
 RUN touch /tmp/storage/JBeretUI.log
 RUN touch /tmp/storage/MongoDB.log
 #CMD ["nohup gulp --restUrl http://localhost:8080/java-batch/api"]
 WORKDIR /tmp/storage/test
-CMD /tmp/run.sh 
-
-
+CMD /tmp/run.sh
