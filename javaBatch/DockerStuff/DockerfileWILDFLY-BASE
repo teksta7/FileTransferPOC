@@ -9,6 +9,7 @@ RUN yum install -y nodejs.x86_64 npm
 
 #JBeret UI Setup
 RUN mkdir /tmp/JBeretUI /tmp/storage /tmp/storage/test
+RUN mkdir -p /opt/jboss/wildfly/modules/system/layers/base/com/mysql/main
 COPY jberet-ui-master/ /tmp/JBeretUI/
 WORKDIR /tmp/JBeretUI
 RUN npm install -g bower forever gulp
@@ -20,6 +21,9 @@ RUN touch /tmp/storage/Wildfly.log
 WORKDIR /tmp/storage/test
 ADD sampleLarge.json /tmp/storage/test/sampleLarge.json
 ADD sampleOLD.json /tmp/storage/test/sampleOLD.json
+ADD mysql-connector-java-8.0.15.jar /opt/jboss/wildfly/modules/system/layers/base/com/mysql/main/
+ADD module.xml /opt/jboss/wildfly/modules/system/layers/base/com/mysql/main/
+ADD commands.cli  /tmp/storage/commands.cli
 
 #Copy script
 ADD runALT.sh /tmp/runALT.sh
