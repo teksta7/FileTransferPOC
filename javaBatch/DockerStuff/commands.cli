@@ -2,3 +2,4 @@
 data-source add --name=MySqlDS --jndi-name=java:jboss/MySqlDS --driver-name=mysql --connection-url=jdbc:mysql://mymysql/mysql --user-name=root --password=password --enabled=true --use-java-context=true --jta=true
 /subsystem=batch-jberet/jdbc-job-repository=jdbc:add(data-source=MySqlDS)
 /subsystem=batch-jberet/:write-attribute(name=default-job-repository, value=jdbc)
+:reload
