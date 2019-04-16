@@ -5,6 +5,6 @@ sleep 8s
 sh /opt/jboss/wildfly/bin/jboss-cli.sh --connect --file=/tmp/storage/commands.cli
 cd /tmp/JBeretUI
 #nohup npm start &>/tmp/storage/JBeretUI.log &
-nohup gulp --restUrl http://localhost:8080/java-batch/api/ &> /tmp/storage/JBeretUI.log &
+nohup gulp --restUrl http://localhost:8080/java-batch/api &> /tmp/storage/JBeretUI.log &
 echo "Started JBeretUI, Container started successfully"
 exec "/bin/bash"

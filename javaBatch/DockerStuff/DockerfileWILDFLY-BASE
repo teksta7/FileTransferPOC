@@ -17,7 +17,7 @@ RUN npm install
 
 #Logging and test files setup
 RUN touch /tmp/storage/JBeretUI.log
-RUN touch /tmp/storage/Wildfly.log
+RUN touch /tmp/storage/WildFly.log
 WORKDIR /tmp/storage/test
 ADD sampleLarge.json /tmp/storage/test/sampleLarge.json
 ADD sampleOLD.json /tmp/storage/test/sampleOLD.json
