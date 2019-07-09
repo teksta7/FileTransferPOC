@@ -12,12 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 @EnableConfigurationProperties
 @RestController
 @ControllerAdvice
 @SpringBootApplication
 public class Application {
-
+	
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
@@ -29,14 +32,14 @@ public class Application {
 			System.out.println("200 Response triggered");
 			return "{\"Status\": \"Microservice is active\"}";
 	}
-	@ResponseStatus(HttpStatus.OK)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@RequestMapping("/test/400/OK") //Make microservice available via REST call
 	public String testInvalid()
 	{
 			System.out.println("400 Response triggered");
 			return "{\"Status\": \"Microservice got bad data from client\"}";
 	}
-	@ResponseStatus(HttpStatus.OK)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@RequestMapping("/test/500/OK") //Make microservice available via REST call
 	public String testServer_Error()
 	{
